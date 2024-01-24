@@ -1,0 +1,30 @@
+\section{Discussion}
+The results shown align with many of our intuitive expectations about measuring the sensitivity of projected shape with respect to 3D object orientation, as well as aligned with the regions of difficulty for JTML optimization.
+The humeral implant demonstrated an overall smooth and low shape sensitivity, especially for $\delta_{y}$ rotations (\cref{tab:ss-vals}).
+This axis is the axis along which the humeral implant is the most cylindrical, which means that we would not expect to see a large change in the shape descriptor with minor $\delta_{y}$ rotations.
+Additionally, this is the axis which JTML had the most difficulty with.
+
+We see similar intuitive results in the glenosphere implant, which had the lowest average $\mathbb{S}(\delta)$ value among all implant types.
+This bulk of the volume of this implant is the articulation surface, which closely resembles a sphere.
+Because the projection of a sphere (a circle) is unchanging with respect to the orientation of a sphere, we would expect that the more closely a shape resembles a sphere, then we should expect a lower overall shape sensitivity.
+
+We see that the shape sensitivity of the tibial implant along the $\delta_{y}$ rotation corroborates our intuition about symmetry traps.
+Along the line defined by $x=0$, we see a consistently low shape sensitivity.
+This internal/external rotation axis is exactly the axis that caused issues with symmetry traps, wherein 2 distinct 3D orientations produce the same projected shape.
+In the context of this discussion, we would say that the $\Delta S = 0$ between those two tibial orientations.
+
+Another aspect of Joint Track Machine Learning that this study informs is the current use of Euler angles in our DIRECT-JTA optimization routine.
+Rather than independently varying all angles in a body-centered reference frame, which is insuitable for hyperbox creation, we are presently optimizing over a range of ordered rotations projected via the sequence $R_{z}R_{x}R_{y}$.
+As evidenced by the humeral implant's struggles aligning the $y$-axis, this ordered sequence with a symmetric final axis can impede convergence.
+
+Beyond the inherent shape sensitivities, such optimization limitations motivate exploring alternatives to Euler angles.
+Performing registration optimization directly on the Special Orthogonal group $SO(3)$ poses an intriguing direction.
+$SO(3)$ encapsulates all possible 3D rotations in a mathematically convenient structure (A \emph{Lie Group}, which is both a manifold and a group).
+By optimizing on this manifold instead of using specific angle parametrizations, issues with gimbal lock and cascade effects can be avoided.
+Optimization over Lie groups is an emerging subfield - establishing robust $SO(3)$-based registration cost functions could significantly improve JTML convergence while relying less on descriptor sensitivity along certain axes.
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../main"
+%%% End:

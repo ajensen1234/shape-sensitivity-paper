@@ -1,0 +1,105 @@
+\section{Methods}
+
+\subsection{Data Collection}
+First, we collected one manufacturer-provided model from each of: rTSA humeral implant, rTSA glenosphere implant, TKA femoral implant, and TKA tibial implant for testing shape sensitivity.
+\subsection{Image Generation}
+The binary silhouette of each implant was rendered using an in-house CUDA camera model (CUDA Version 12.1) \cite{nickollsScalableParallelProgramming2008} to a $1024\times 1024$ image plane.
+The focal length of the pinhole camera model was 1000mm and each pixel was 0.3mm.
+All CUDA programming was performed on an NVIDIA Quadro P2200 GPU.
+\subsection{Invariant Angular Radial Transform}
+The invariant angular radial transform descriptor (IARTD) was selected due to its sensitivity in the radial direction \cite{leeNewShapeDescription2012}.
+This sensitivity allows us to address minor changes along the contour of our projected shape, which is a desirable property for determining the minor changes in shape with respect to input orientation.
+
+The IARTD is a complex moment calculated by summing orthogonal basis components on the unit polar disk.
+Each basis function has an order ($n$) and a repetition ($p$).
+Intuitively, the order represents concentric ``rings'' in our polar disk, and the repetition is the number of ``pie slices'' in our unit disk along $\theta$.
+To perform these calculations, we normalize our image such that $(0,0)$ is at the center and $(\pm1,\pm1)$ are the four corners.
+
+Each angular radial transform (ART) coefficient is a complex double integral (\cref{eq:F_np}) over the image in polar coordinates, $f(\rho,\theta)$ multiplied by the ART basis function, $V_{np}(\rho,\theta)$ (\cref{eq:V_np}).
+
+\begin{equation}
+	\label{eq:F_np}
+	F_{np} = \int_{0}^{2\pi}\int_{0}^{1}f(\rho,\theta)V_{np}(\rho,\theta)\rho d\rho d\theta
+\end{equation}
+
+\begin{equation}
+	\label{eq:V_np}
+	V_{np}(\rho,\theta) = A_{p}(\theta)R_{n}(\rho)
+\end{equation}
+
+Our radial basis function is comprised of a complex exponential, $A_{p}(\theta)$ (\cref{eq:A_p}), which provides rotational invariance, and a trigonometric transform, $R_{p}(\theta)$ (\cref{eq:R_n}) to provide orthogonality.
+
+\begin{equation}
+	\label{eq:A_p}
+	A_{p}(\theta) = \dfrac{1}{2\pi}e^{jp\theta}
+\end{equation}
+\begin{equation}
+	\label{eq:R_n}
+	R_{n}(\rho) =
+	\begin{cases}
+		1                   & n=0     \\
+		2 \cos (\pi n \rho) & n \ne 0
+	\end{cases}
+\end{equation}
+
+Lastly, in order to correct for differences in the in-plane rotation, we apply a phase-correction to each ART coefficient (\cref{eq:art_phase_correction}, \cref{eq:fnp_phase_correction}).
+\begin{equation}
+	\label{eq:art_phase_correction}
+	\phi'_{np} = \phi_{np} - \phi_{n,1}
+\end{equation}
+
+\begin{equation}
+	\label{eq:fnp_phase_correction}
+	F_{np}' = F_{np}e^{-jp\phi_{n,1}}
+\end{equation}
+
+And the, the final feature vector becomes a the polar decomposition of our coefficient at each order and repetition \cref{eq:iartd}.
+We exclude values from the first two repetitions because they contain no valuable information.
+To construct the full IARTD feature vector, we used values of $n=\{0, \dots, 3 \}$ and $p=\{0, \dots, 8\}$.
+
+\begin{equation}
+	\label{eq:iartd}
+	IARTD = \{|F'_{np}|, \phi_{np}'\} \text{ where } n \ge 0, p \ge 2
+\end{equation}
+
+\subsection{Shape Differences and Sensitivity}
+The primary goal of this section is to establish a easily interpretable value that captures the overall change from one shape to another.
+For clarity in representation, successive rotations were denoted as subscripts, such that $R_{z}R_{x}R_{y} = R_{z,x,y}$. The application of the IARTD equation to an implant at a specific input orientation $R_{z,x,y}$ was represented as $IARTD(R_{z,x,y})$.
+Shape differences were calculated using the central difference equation on the IARTD vector produced from two different orientations.
+The grid of sampled orientations had extrema of $\pm 30$ with a step size of $5$ for each of the $x$, $y$, and $z$ axes.
+The ``differences'' along each axes were computed by applying a positive and negative rotation ($\pm \delta $) of 1 degree.
+And so, for every input $x,y,z$ rotation, there will be three shape differences, one for each $\delta_{x}$, $\delta_{y}$ or $\delta_{z}$ (\cref{eq:shape-derivative}).
+For notational brevity, we will condense the full equation down to a single $\Delta S(\delta)$, (representing $\Delta Shape$ for a differential rotation $\delta$).
+
+\begin{equation}
+	\label{eq:shape-derivative}
+	\Delta S(\delta)_{z,x,y} \equiv \dfrac{ \partial IARTD(R_{z,x,y}) }{\partial \delta} \propto IARTD(R_{z,x,y,+\delta}) - IARTD(R_{z,x,y,-\delta})
+\end{equation}
+
+Because each element of the IARTD vector is at a different scale, we must standardize each element in order to ensure accurate assessment of global behavior without analysis being dominated by a single value.
+We use z-score to do this, which assumes a normal distribution, but allows for some outliers if they are present.
+
+
+After z-scaling, we took the Euclidean norm of each $S(\delta)_{z,x,y}$ to capture the total amount of change of that shape for a given differential rotation (\cref{eq:euc_norm}).
+Our final step takes advantage of two factors: first, that our in-plane rotations are the first in our Euler sequence ($z$-axis), and second, that this type of rotation does not affect the in-plane shape.
+And so, for every $x$ and $y$ input rotation, we average all the values where $x$ and $y$ are held constant as $z$ varies (\cref{eq:z_rot_norm}).
+This yields our final values, which we will denote $\mathbb{S}$.
+$\mathbb{S}_{x,y}$ will have separate plots for each $x$, $y$, and $z$ differential rotation and for each of the four implants.
+These plots will be compared with respect to JTML optimization performance and regions of difficulty for optimization.
+
+
+\begin{equation}
+	\label{eq:euc_norm}
+	\|S(\delta)_{z,x,y}\|_{2}
+\end{equation}
+
+\begin{equation}
+	\label{eq:z_rot_norm}
+	\mathbb{S}(\delta)_{x,y} = \dfrac{\sum_{z} \| S(\delta)_{z,x,y} \|_{2}}{N}
+\end{equation}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../main"
+%%% TeX-master: "../main"
+%%% End:
