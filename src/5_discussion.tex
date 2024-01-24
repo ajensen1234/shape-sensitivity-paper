@@ -11,7 +11,7 @@ Because the projection of a sphere (a circle) is unchanging with respect to the 
 We see that the shape sensitivity of the tibial implant along the $\delta_{y}$ rotation corroborates our intuition about symmetry traps.
 Along the line defined by $x=0$, we see a consistently low shape sensitivity.
 This internal/external rotation axis is exactly the axis that caused issues with symmetry traps, wherein 2 distinct 3D orientations produce the same projected shape.
-In the context of this discussion, we would say that the $\Delta S = 0$ between those two tibial orientations.
+In the context of this analysis, the $\Delta S$ would equal $0$ between those two tibial orientations.
 
 Another aspect of Joint Track Machine Learning that this study informs is the current use of Euler angles in our DIRECT-JTA optimization routine.
 Rather than independently varying all angles in a body-centered reference frame, which is insuitable for hyperbox creation, we are presently optimizing over a range of ordered rotations projected via the sequence $R_{z}R_{x}R_{y}$.
@@ -22,6 +22,11 @@ Performing registration optimization directly on the Special Orthogonal group $S
 $SO(3)$ encapsulates all possible 3D rotations in a mathematically convenient structure (A \emph{Lie Group}, which is both a manifold and a group).
 By optimizing on this manifold instead of using specific angle parametrizations, issues with gimbal lock and cascade effects can be avoided.
 Optimization over Lie groups is an emerging subfield - establishing robust $SO(3)$-based registration cost functions could significantly improve JTML convergence while relying less on descriptor sensitivity along certain axes.
+
+Lastly, incorporating bone information into the optimization routine seems to be the most likely path forward for disambiguating difficult implant orientations.
+This study demonstrates that for specific implant geometries, there are inherent limitations to the information that can be gathered from the projected 2D shape as manifest in fluoroscopic imaging.
+Utilizing bone information, such as keypoints representing specific anatomic structures, would drastically increase the amount of information present during optimization, and could offer robust constraints on the possible 3D orientations of implant models.
+
 
 
 %%% Local Variables:
