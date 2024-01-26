@@ -1,19 +1,20 @@
 \section{Methods}
 
 \subsection{Data Collection}
-We obtained one manufacturer-provided 3D model for each of the following: reverse total shoulder arthroplasty (rTSA) humeral implant, rTSA glenosphere implant, total knee arthroplasty (TKA) femoral implant, and TKA tibial implant. These were used to test shape sensitivity.
+For shape sensitivity analysis, representative 3D models of reverse total shoulder arthroplasty (rTSA) humeral and glenosphere implants, as well as total knee arthroplasty (TKA) femoral and tibial implants, were obtained from a manufacturer.
+The study focused on a single size for each implant type, as the scale of the shapes was normalized using an Invariant Shape Descriptor, rendering multiple sizes unnecessary for this analysis.
 \subsection{Image Generation}
-The binary silhouette of each implant was rendered using an in-house CUDA camera model (CUDA Version 12.1) \cite{nickollsScalableParallelProgramming2008} to a $1024\times 1024$ image plane.
-The focal length of the pinhole camera model was 1000mm and each pixel was 0.3mm.
-All CUDA programming was performed on an NVIDIA Quadro P2200 GPU.
+Each implant's binary silhouette was rendered to a $1024\times 1024$ image plane using an in-house CUDA camera model (CUDA Version 12.1) \cite{nickollsScalableParallelProgramming2008}.
+The model featured a 1000mm focal length and 0.3mm per pixel resolution.
+All programming tasks utilized an NVIDIA Quadro P2200 GPU.
 \subsection{Invariant Angular Radial Transform}
-The invariant angular radial transform descriptor (IARTD) was selected due to its sensitivity in the radial direction \cite{leeNewShapeDescription2012}.
-This sensitivity allows us to address minor changes along the contour of our projected shape, which is a desirable property for determining the minor changes in shape with respect to input orientation.
+The Invariant Angular Radial Transform Descriptor (IARTD) was selected for its radial direction sensitivity, enabling the detection of subtle contour changes in projected shapes \cite{leeNewShapeDescription2012}.
+This sensitivity allows us to address minor changes along the contour of the projected shape, which is a desirable property for determining the minor changes in shape with respect to input orientation.
 
-The IARTD is a complex moment calculated by summing orthogonal basis components on the unit polar disk.
+IARTD computation involves aggregating orthogonal basis components across the unit polar disk, forming a complex moment.
 Each basis function has an order ($n$) and a repetition ($p$).
-Intuitively, the order represents concentric ``rings'' in our polar disk, and the repetition is the number of ``pie slices'' in our unit disk along $\theta$.
-To perform these calculations, we normalize our image such that $(0,0)$ is at the center and $(\pm1,\pm1)$ are the four corners.
+The order can be visualized as concentric rings on the polar disk, and the repetition as the count of slices partitioning the unit disk along $\theta$.
+For these calculations, the image is normalized so that the center is at $(0,0)$, and the four corners are at $(\pm1,\pm1)$.
 
 Each angular radial transform (ART) coefficient is a complex double integral (\cref{eq:F_np}) over the image in polar coordinates, $f(\rho,\theta)$ multiplied by the ART basis function, $V_{np}(\rho,\theta)$ (\cref{eq:V_np}).
 
@@ -27,7 +28,7 @@ Each angular radial transform (ART) coefficient is a complex double integral (\c
 	V_{np}(\rho,\theta) = A_{p}(\theta)R_{n}(\rho)
 \end{equation}
 
-Our radial basis function is comprised of a complex exponential, $A_{p}(\theta)$ (\cref{eq:A_p}), which provides rotational invariance, and a trigonometric transform, $R_{p}(\theta)$ (\cref{eq:R_n}) to provide orthogonality.
+The radial basis function includes a complex exponential, $A_{p}(\theta)$ (\cref{eq:A_p}), ensuring rotational invariance, and a trigonometric transform, $R_{p}(\theta)$ (\cref{eq:R_n}), to establish orthogonality.
 
 \begin{equation}
 	\label{eq:A_p}
@@ -42,7 +43,8 @@ Our radial basis function is comprised of a complex exponential, $A_{p}(\theta)$
 	\end{cases}
 \end{equation}
 
-Lastly, in order to correct for differences in the in-plane rotation, we apply a phase-correction to each ART coefficient (\cref{eq:art_phase_correction}, \cref{eq:fnp_phase_correction}).
+Phase correction is applied to each ART coefficient (\cref{eq:art_phase_correction}, \cref{eq:fnp_phase_correction}) to adjust for differences in in-plane rotation.
+
 \begin{equation}
 	\label{eq:art_phase_correction}
 	\phi'_{np} = \phi_{np} - \phi_{n,1}
@@ -53,9 +55,9 @@ Lastly, in order to correct for differences in the in-plane rotation, we apply a
 	F_{np}' = F_{np}e^{-jp\phi_{n,1}}
 \end{equation}
 
-And the, the final feature vector becomes a the polar decomposition of our coefficient at each order and repetition \cref{eq:iartd}.
-We exclude values from the first two repetitions because they contain no valuable information.
-To construct the full IARTD feature vector, we used values of $n=\{0, \dots, 3 \}$ and $p=\{0, \dots, 8\}$.
+Subsequently, the final feature vector is formulated by the polar decomposition of each coefficient at every order and repetition (\cref{eq:iartd}).
+Values from the first two repetitions are excluded, as they do not provide significant information \cite{leeNewShapeDescription2012}.
+The complete IARTD feature vector encompasses values of $n={0, \dots, 3 }$ and $p={0, \dots, 8}$ per the original authors' suggestion \cite{leeNewShapeDescription2012}.
 
 \begin{equation}
 	\label{eq:iartd}
@@ -63,30 +65,30 @@ To construct the full IARTD feature vector, we used values of $n=\{0, \dots, 3 \
 \end{equation}
 
 \subsection{Shape Differences and Sensitivity}
-The primary goal of this section is to establish a easily interpretable value that captures the overall change from one shape to another.
-For clarity in representation, successive rotations were denoted as subscripts, such that $R_{z}R_{x}R_{y} = R_{z,x,y}$. The application of the IARTD equation to an implant at a specific input orientation $R_{z,x,y}$ was represented as $IARTD(R_{z,x,y})$.
+In order to quantify the overall change between shapes, a readily interpretable value must be established.
+To simplify notation, successive rotations are denoted as subscripts, with $R_{z}R_{x}R_{y}$ being represented as $R_{z,x,y}$. Similarly, the application of the IARTD equation to an implant at a specific input orientation $R_{z,x,y}$ is denoted as $IARTD(R_{z,x,y})$.
 Shape differences were calculated using the central difference equation on the IARTD vector produced from two different orientations.
-The grid of sampled orientations had extrema of $\pm 30$ with a step size of $5$ for each of the $x$, $y$, and $z$ axes.
-The ``differences'' along each axes were computed by applying a positive and negative rotation ($\pm \delta $) of 1 degree.
-And so, for every input $x,y,z$ rotation, there will be three shape differences, one for each $\delta_{x}$, $\delta_{y}$ or $\delta_{z}$ (\cref{eq:shape-derivative}).
-For notational brevity, we will condense the full equation down to a single $\Delta S(\delta)$, (representing $\Delta Shape$ for a differential rotation $\delta$).
+The grid of sampled orientations had extrema of $\pm 30^{\circ}$ with a step size of $5^{\circ}$ for each of the $x$, $y$, and $z$ axes.
+The ``differences'' along each axis were computed using a positive and negative rotation ($\pm \delta $) of 1 degree.
+Therefore, for every set of $x,y,z$ rotations, three distinct shape differences are computed, one each for $\delta_{x}$, $\delta_{y}$, and $\delta_{z}$ (\cref{eq:shape-derivative}).
 
+For notational brevity, we will condense the total equation to a single $\Delta S(\delta)$, (representing $\Delta Shape$ for a differential rotation $\delta$).
 \begin{equation}
 	\label{eq:shape-derivative}
-	\Delta S(\delta)_{z,x,y} \equiv \dfrac{ \partial IARTD(R_{z,x,y}) }{\partial \delta} \propto IARTD(R_{z,x,y,+\delta}) - IARTD(R_{z,x,y,-\delta})
+	\begin{split}
+		\Delta S(\delta)_{z,x,y} & \equiv \dfrac{ \partial IARTD(R_{z,x,y}) }{\partial \delta} \propto IARTD(R_{z,x,y,+\delta}) - IARTD(R_{z,x,y,-\delta}) \\
+		                         & \forall \delta \in \{\delta_{x},\delta_{y},\delta_{z}\}
+	\end{split}
 \end{equation}
 
-Because each element of the IARTD vector is at a different scale, we must standardize each element in order to ensure accurate assessment of global behavior without analysis being dominated by a single value.
-We use z-score to do this, which assumes a normal distribution, but allows for some outliers if they are present.
+The disparate scales of IARTD vector elements necessitate their standardization, ensuring a balanced assessment of global behavior without overemphasis on any individual element.
+Z-scaling provides a practical approach to standardizing each element relative to its distribution.
+After z-scaling, the Euclidean norm of each $S(\delta)_{z,x,y}$ is calculated to quantify the total shape change for a specific differential rotation (\cref{eq:euc_norm}).
 
-
-After z-scaling, we took the Euclidean norm of each $S(\delta)_{z,x,y}$ to capture the total amount of change of that shape for a given differential rotation (\cref{eq:euc_norm}).
-Our final step takes advantage of two factors: first, that our in-plane rotations are the first in our Euler sequence ($z$-axis), and second, that this type of rotation does not affect the in-plane shape.
-And so, for every $x$ and $y$ input rotation, we average all the values where $x$ and $y$ are held constant as $z$ varies (\cref{eq:z_rot_norm}).
-This yields our final values, which we will denote $\mathbb{S}$.
-$\mathbb{S}_{x,y}$ will have separate plots for each $x$, $y$, and $z$ differential rotation and for each of the four implants.
-These plots will be compared with respect to JTML optimization performance and regions of difficulty for optimization.
-
+The final step takes advantage of two factors: first, that the in-plane rotations are the first in the Euler sequence ($z$-axis), and second, that this type of rotation does not affect the in-plane shape.
+For each $x$ and $y$ input rotation, an average is computed from values where $x$ and $y$ remain constant while $z$ varies (\cref{eq:z_rot_norm}). The final values are obtained from this equation, denoted by $\mathbb{S}$.
+Individual plots will be created for $\mathbb{S}_{x,y}$, corresponding to each differential rotation in $x$, $y$, and $z$, and for each of the four implant types.
+An analysis of these plots will be conducted to assess the performance of JTML optimization and to explore areas where optimization faces significant challenges.
 
 \begin{equation}
 	\label{eq:euc_norm}
