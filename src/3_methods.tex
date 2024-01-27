@@ -73,13 +73,16 @@ The ``differences'' along each axis were computed using a positive and negative 
 Therefore, for every set of $x,y,z$ rotations, three distinct shape differences are computed, one each for $\delta_{x}$, $\delta_{y}$, and $\delta_{z}$ (\cref{eq:shape-derivative}).
 
 For notational brevity, we will condense the total equation to a single $\Delta S(\delta)$, (representing $\Delta Shape$ for a differential rotation $\delta$).
+
 \begin{equation}
 	\label{eq:shape-derivative}
 	\begin{split}
-		\Delta S(\delta)_{z,x,y} & \equiv \dfrac{ \partial IARTD(R_{z,x,y}) }{\partial \delta} \propto IARTD(R_{z,x,y,+\delta}) - IARTD(R_{z,x,y,-\delta}) \\
-		                         & \forall \delta \in \{\delta_{x},\delta_{y},\delta_{z}\}
+		\Delta S(\delta)_{z,x,y}  \equiv & IARTD(R_{z,x,y,+\delta})                        \\
+		                                 & - IARTD(R_{z,x,y,-\delta})                      \\
+		\forall                          & \delta \in \{\delta_{x},\delta_{y},\delta_{z}\}
 	\end{split}
 \end{equation}
+
 
 The disparate scales of IARTD vector elements necessitate their standardization, ensuring a balanced assessment of global behavior without overemphasis on any individual element.
 Z-scaling provides a practical approach to standardizing each element relative to its distribution.
