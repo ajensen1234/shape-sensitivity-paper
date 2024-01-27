@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[preprint,12pt]{elsarticle}
 
 % Packages for math
 \usepackage{amsmath}
@@ -11,37 +11,39 @@
 \usepackage[capitalize]{cleveref}
 \creflabelformat{equation}{#2\textup{#1}#3}
 \crefdefaultlabelformat{#2\textup{#1}#3}
-\usepackage[backend=biber]{biblatex}
 % Set your bibliography file here
-\addbibresource{~/org/biblio.bib}
 % Set line spacing to 1.5
-\usepackage{setspace}
-\setstretch{1.5}
-\renewcommand{\thesection}{}
-\renewcommand{\thesubsection}{}
 \usepackage{tabularx}
-\usepackage{graphicx}
-\usepackage{mlmodern}
 
+
+\journal{Computers in Biology and Medicine}
 \begin{document}
-\linenumbers
-\title{3D/2D Projected Shape Sensitivity Analysis of Total Joint Arthroplasty Implants}
-\author{Andrew James Jensen, Scott Banks, Ph.D.}
-\date{}
 
-\maketitle
+\begin{frontmatter}
+	\title{3D/2D Projected Shape Sensitivity Analysis of Total Joint Arthroplasty Implants}
+	\author[a]{Andrew James Jensen}
+	\author[a]{Scott A. Banks}
+	\affiliation[a]{
+		organization={Mechanical and Aerospace Engineering, University of Florida},
+		city={Gainesville},
+		state={Florida},
+		country={USA}
+	}
+	\input{src/1_abstract.tex}
 
-\input{src/1_abstract.tex}
+\end{frontmatter}
+
+
 \input{src/2_intro.tex}
 \input{src/3_methods.tex}
 \input{src/4_results.tex}
 \input{src/5_discussion.tex}
 \input{src/6_conclusion.tex}
 
-\printbibliography
+\bibliographystyle{elsarticle-num}
+\bibliography{~/org/biblio.bib}
 
 \end{document}
-
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: t
