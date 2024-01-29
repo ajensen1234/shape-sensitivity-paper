@@ -66,7 +66,9 @@ The complete IARTD feature vector encompasses values of $n={0, \dots, 3 }$ and $
 
 \subsection{Shape Differences and Sensitivity}
 In order to quantify the overall change between shapes, a readily interpretable value must be established.
-To simplify notation, successive rotations are denoted as subscripts, with $R_{z}R_{x}R_{y}$ being represented as $R_{z,x,y}$. Similarly, the application of the IARTD equation to an implant at a specific input orientation $R_{z,x,y}$ is denoted as $IARTD(R_{z,x,y})$.
+To simplify notation, successive rotations are denoted as subscripts, with $R_{z}R_{x}R_{y}$ being represented as $R_{z,x,y}$.
+If more than 3 rotations are applied successively, the full rotation sequence will be captured as $R_{r_{1},r_{2},r_{3},\cdots,r_{n}}$.
+Similarly, the application of the IARTD equation to an implant at a specific input orientation $R_{z,x,y}$ is denoted as $IARTD(R_{z,x,y})$.
 Shape differences were calculated using the central difference equation on the IARTD vector produced from two different orientations.
 The grid of sampled orientations had extrema of $\pm 30^{\circ}$ with a step size of $5^{\circ}$ for each of the $x$, $y$, and $z$ axes.
 The ``differences'' along each axis were computed using a positive and negative rotation ($\pm \delta $) of 1 degree.
@@ -83,6 +85,14 @@ For notational brevity, we will condense the total equation to a single $\Delta 
 	\end{split}
 \end{equation}
 
+\begin{mdframed}
+  \textcolor{red}{Is this approximation averaged over separate unit
+perturbations in each DoF(1), or is each axis tweaked
+simultaneously so there are only two IARTDs to diff (2)? \\
+This is the (1) option.
+I tried to emphasize this further in the above section by describing $>3$ rotations using a successive notation. I also tried to emphasize that this was for each $\delta_{x,y,z}$ in the equation itself.
+}
+\end{mdframed}
 
 The disparate scales of IARTD vector elements necessitate their standardization, ensuring a balanced assessment of global behavior without overemphasis on any individual element.
 Z-scaling provides a practical approach to standardizing each element relative to its distribution.
